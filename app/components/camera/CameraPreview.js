@@ -5,13 +5,13 @@ export default function CameraPreview({ modo }) {
       : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop";
 
   return (
-    <section className="camera-preview">
-
+    <section className="relative h-full w-full">
+      {/* IMAGEM DA CÂMERA */}
       <img
         className={
           modo === "filter"
-            ? "camera-image filtered"
-            : "camera-image"
+            ? "h-full w-full object-cover sepia"
+            : "h-full w-full object-cover"
         }
         src={imagem}
         alt={
@@ -21,10 +21,10 @@ export default function CameraPreview({ modo }) {
         }
       />
 
+      {/* MOLDURA DE DIGITALIZAÇÃO */}
       {modo === "scan" && (
-        <div className="scanner-frame"></div>
+        <div className="absolute top-1/2 left-1/2 h-80 w-64 -translate-x-1/2 -translate-y-1/2 rounded-card border-4 border-green-400 shadow-lg"></div>
       )}
-
     </section>
   );
 }

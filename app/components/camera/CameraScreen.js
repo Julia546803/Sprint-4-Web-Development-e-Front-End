@@ -8,74 +8,47 @@ import CameraPreview from "./CameraPreview";
 
 export default function CameraScreen({ onCloseCamera }) {
   const [modo, setModo] = useState("normal");
-
-  const [galeria, setGaleria] = useState(() => {
-    if (typeof window === "undefined") {
-      return [];
-    }
-
-    const fotosSalvas = localStorage.getItem("galeria");
-
-    if (!fotosSalvas) {
-      return [];
-    }
-
-    return JSON.parse(fotosSalvas);
-  });
-
-  const [fotoCapturada, setFotoCapturada] = useState(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    const fotosSalvas = localStorage.getItem("galeria");
-
-    if (!fotosSalvas) {
-      return null;
-    }
-
-    const fotosConvertidas = JSON.parse(fotosSalvas);
-
-    if (fotosConvertidas.length === 0) {
-      return null;
-    }
-
-    return fotosConvertidas[
-      fotosConvertidas.length - 1
-    ].imagem;
-  });
-
-  const [fotoTemFiltro, setFotoTemFiltro] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    const fotosSalvas = localStorage.getItem("galeria");
-
-    if (!fotosSalvas) {
-      return false;
-    }
-
-    const fotosConvertidas = JSON.parse(fotosSalvas);
-
-    if (fotosConvertidas.length === 0) {
-      return false;
-    }
-
-    return fotosConvertidas[
-      fotosConvertidas.length - 1
-    ].comFiltro;
-  });
-
+  const [galeria, setGaleria] = useState([]);
   const [mostrarGaleria, setMostrarGaleria] = useState(false);
+  const [carregandoGaleria, setCarregandoGaleria] = useState(true);
+
+  // CARREGAR GALERIA DO LOCALSTORAGE
+  useEffect(() => {
+    const carregarGaleria = () => {
+      const fotosSalvas = localStorage.getItem("galeria");
+
+      if (fotosSalvas) {
+        try {
+          const fotosConvertidas = JSON.parse(fotosSalvas);
+
+          if (Array.isArray(fotosConvertidas)) {
+            setGaleria(fotosConvertidas);
+          }
+        } catch {
+          setGaleria([]);
+        }
+      }
+
+      setCarregandoGaleria(false);
+    };
+
+    const timer = setTimeout(carregarGaleria, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // SALVAR GALERIA NO LOCALSTORAGE
   useEffect(() => {
-    localStorage.setItem(
-      "galeria",
-      JSON.stringify(galeria)
-    );
-  }, [galeria]);
+    if (!carregandoGaleria) {
+      localStorage.setItem(
+        "galeria",
+        JSON.stringify(galeria)
+      );
+    }
+  }, [galeria, carregandoGaleria]);
+
+  // ÚLTIMA FOTO DA GALERIA
+  const ultimaFoto = galeria[galeria.length - 1];
 
   // BOTÃO FOTO
   function handleFoto() {
@@ -100,7 +73,7 @@ export default function CameraScreen({ onCloseCamera }) {
     setModo("normal");
   }
 
-  // CAPTURAR FOTO
+  // CAPTURAR FOTO SIMULADA
   function handleCaptura() {
     let imagemAtual;
 
@@ -114,7 +87,7 @@ export default function CameraScreen({ onCloseCamera }) {
 
     const comFiltro = modo === "filter";
 
-    // MATH
+    // GERAR ID DA FOTO
     const idFoto = Math.floor(
       Math.random() * 100000
     );
@@ -124,9 +97,6 @@ export default function CameraScreen({ onCloseCamera }) {
       imagem: imagemAtual,
       comFiltro: comFiltro,
     };
-
-    setFotoCapturada(imagemAtual);
-    setFotoTemFiltro(comFiltro);
 
     setGaleria((fotos) => [
       ...fotos,
@@ -141,51 +111,39 @@ export default function CameraScreen({ onCloseCamera }) {
 
   // APAGAR FOTO
   function handleDeleteFoto(indexFoto) {
-    setGaleria((fotos) => {
-      const novaGaleria = fotos.filter(
+    setGaleria((fotos) =>
+      fotos.filter(
         (_, index) => index !== indexFoto
-      );
-
-      if (novaGaleria.length > 0) {
-        const ultimaFoto =
-          novaGaleria[novaGaleria.length - 1];
-
-        setFotoCapturada(ultimaFoto.imagem);
-        setFotoTemFiltro(ultimaFoto.comFiltro);
-      } else {
-        setFotoCapturada(null);
-        setFotoTemFiltro(false);
-      }
-
-      return novaGaleria;
-    });
+      )
+    );
   }
 
   return (
-    <section className="camera-screen">
-
-      {/* TOPO */}
-
-      <section className="camera-top">
-
-        <button onClick={onCloseCamera}>
+    <section className="relative flex h-[calc(100%-40px)] w-full flex-col bg-black">
+      {/* TOPO DA CÂMERA */}
+      <section className="absolute top-0 z-20 flex w-full items-center justify-between p-4">
+        <button
+          type="button"
+          onClick={onCloseCamera}
+          aria-label="Voltar"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-white"
+        >
           ←
         </button>
 
-        <h2>Câmera</h2>
+        <h2 className="font-bold text-white">
+          Câmera
+        </h2>
 
-        <button>
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-white">
           ⚙
-        </button>
-
+        </span>
       </section>
 
       {/* VISUALIZAÇÃO */}
-
       <CameraPreview modo={modo} />
 
-      {/* GALERIA */}
-
+      {/* PAINEL DA GALERIA */}
       {mostrarGaleria && (
         <GalleryPanel
           fotos={galeria}
@@ -194,54 +152,52 @@ export default function CameraScreen({ onCloseCamera }) {
         />
       )}
 
-      {/* CONTROLES */}
+      {/* CONTROLES INFERIORES DA CÂMERA */}
+      <div className="absolute bottom-12 left-0 z-30 flex w-full flex-col items-center gap-space-lg px-2">
+        {/* BOTÕES DE MODO */}
+        <CameraControls
+          onFoto={handleFoto}
+          onScan={handleScan}
+          onFilter={handleFilter}
+          onGallery={handleGaleria}
+          modo={modo}
+          onRemoveFilter={handleRemoveFilter}
+        />
 
-      <CameraControls
-        onFoto={handleFoto}
-        onScan={handleScan}
-        onFilter={handleFilter}
-        onGallery={handleGaleria}
-        modo={modo}
-        onRemoveFilter={handleRemoveFilter}
-      />
-
-      {/* BOTÃO PRINCIPAL */}
-
-      <div
-        className="camera-button"
-        onClick={handleCaptura}
-      ></div>
+        {/* BOTÃO PRINCIPAL DE CAPTURA */}
+        <button
+          type="button"
+          onClick={handleCaptura}
+          aria-label="Capturar foto"
+          className="h-16 w-16 shrink-0 cursor-pointer rounded-full border-4 border-white bg-white"
+        />
+      </div>
 
       {/* MINI GALERIA */}
-
-      <section
-        className="gallery"
-        onClick={
-          fotoCapturada
-            ? handleGaleria
-            : undefined
-        }
+      <button
+        type="button"
+        onClick={ultimaFoto ? handleGaleria : undefined}
+        disabled={!ultimaFoto}
+        aria-label="Abrir galeria de fotos"
+        className="absolute right-5 bottom-14 z-50 h-16 w-16 overflow-hidden rounded-button border-2 border-white"
       >
-
-        {fotoCapturada ? (
+        {ultimaFoto ? (
           <img
             className={
-              fotoTemFiltro
-                ? "gallery-image filtered"
-                : "gallery-image"
+              ultimaFoto.comFiltro
+                ? "h-full w-full object-cover sepia"
+                : "h-full w-full object-cover"
             }
-            src={fotoCapturada}
+            src={ultimaFoto.imagem}
             alt="Última foto registrada"
           />
         ) : (
-          <div className="empty-gallery">
-            <span>📷</span>
-            <p>Sem fotos</p>
+          <div className="flex h-full w-full flex-col items-center justify-center bg-surface text-white">
+            <span className="text-2xl">📷</span>
+            <p className="text-xs">Sem fotos</p>
           </div>
         )}
-
-      </section>
-
+      </button>
     </section>
   );
 }

@@ -1,3 +1,26 @@
 @import "tailwindcss";
 
 @source "../app";
+
+@theme {
+  /* ESPAÇAMENTOS PERSONALIZADOS */
+  --spacing-space-sm: 8px;
+  --spacing-space-md: 16px;
+  --spacing-space-lg: 24px;
+  --spacing-space-xl: 32px;
+
+  /* CORES */
+  --color-primary: #2563eb;
+  --color-primary-hover: #3b82f6;
+  --color-background: #090d17;
+  --color-surface: #121b2d;
+  --color-secondary: #0e7490;
+
+  /* ESTRUTURA DO CELULAR */
+  --color-phone-border: #1f1f1f;
+  --radius-phone: 50px;
+
+  /* BORDAS */
+  --radius-card: 24px;
+  --radius-button: 12px;
+}

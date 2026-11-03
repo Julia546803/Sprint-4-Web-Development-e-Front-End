@@ -1,27 +1,25 @@
-export default function AppIcon({
-  icon,
-  name,
-  onClick,
-  camera,
-}) {
+export default function AppIcon({ icon, name, onClick, camera }) {
   return (
     <article
-      className="app"
-      onClick={onClick}
-    >
+      className="flex flex-col items-center gap-space-sm text-center"
+      onClick={onClick}>
 
+      {/* ÍCONE DO APLICATIVO */}
       <div
         className={
           camera
-            ? "icon camera-icon"
-            : "icon"
-        }
-      >
+            ? "flex h-16 w-16 items-center justify-center rounded-card bg-primary text-3xl"
+            : name === "Contatos"
+            ? "flex h-16 w-16 items-center justify-center rounded-card bg-secondary text-3xl"
+            : "flex h-16 w-16 items-center justify-center rounded-card bg-surface text-3xl"
+        }>
         {icon}
       </div>
 
-      <p>{name}</p>
-
+      {/* NOME DO APLICATIVO */}
+      <p className="text-xs text-white">
+        {name}
+      </p>
     </article>
   );
 }
