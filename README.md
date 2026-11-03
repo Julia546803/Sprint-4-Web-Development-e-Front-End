@@ -373,7 +373,7 @@ Link do repositório: https://github.com/Julia546803/Sprint-4-Web-Development-e-
 ## Deploy na Vercel
 O projeto será publicado utilizando a Vercel.
 
-Link do deploy: 
+Link do deploy: https://sprint-4-web-development-e-front-en.vercel.app/
 
 ---
 
